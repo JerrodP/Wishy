@@ -5,7 +5,7 @@
 The Wishy program's goal is to scrape data from Amazon to get prices and notify users when the price changes. The user will need to provide an IBSN or an ASIN and the rest should be handled, from getting book information to notifying the user of a price change.
 
 ## Goal
-The goal of this project is to accomplish 5
+The goal of this project is to accomplish 
 4 goals to improve my programming skills and familiarity with Python.
 
 1. Follow a consistent design pattern
