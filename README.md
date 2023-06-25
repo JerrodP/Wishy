@@ -6,15 +6,15 @@ The Wishy program's goal is to scrape data from Amazon to get prices and notify 
 
 ## Goal
 The goal of this project is to accomplish 
-4 goals to improve my programming skills and familiarity with Python.
+the following tasks to improve my programming skills and familiarity with Python, Docker, SQL, and more.
 
 1. Follow a consistent design pattern
 2. Better understand how Python interacts with outside databases.
-3. Create clean UI
-4. Integrate an SQL database with CRUD functionality to maintain a database of books.
+3. Integrate a normalized SQL database with CRUD functionality to maintain a database of books.
+4. Learn how to run this system on a Raspberry Pi using Docker.
 
 ## Further design ideas:
 1. Setup virtual machine or server to have program running at all times to update users more consistently
 2. Implement user authentification
-3. Develop IOS app interface.
+3. Develop webapp or app interface.
 4. Edit class structure to add more than just books, ie any Amazon product.
