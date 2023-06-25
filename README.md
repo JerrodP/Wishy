@@ -9,9 +9,9 @@ The goal of this project is to accomplish
 4 goals to improve my programming skills and familiarity with Python.
 
 1. Follow a consistent design pattern
-2. Better understand how Python interacts with objects
+2. Better understand how Python interacts with outside databases.
 3. Create clean UI
-4. Integrate an SQL database with CRUD functionality to maintain a list of books
+4. Integrate an SQL database with CRUD functionality to maintain a database of books.
 
 ## Further design ideas:
 1. Setup virtual machine or server to have program running at all times to update users more consistently
