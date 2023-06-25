@@ -18,3 +18,11 @@ The goal of this project is to accomplish
 2. Implement user authentification
 3. Develop IOS app interface.
 4. Edit class structure to add more than just books, ie any Amazon product.
+
+
+## Installation
+1. Setup a virtual env:
+    `python -m venv wishy_env`
+2. run the activate.bat in wishy_env\scripts
+3. Install proper packages using: `pip install -r requirents.txt`
+4. Restart language server and Black if necessary.
