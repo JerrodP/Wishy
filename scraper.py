@@ -6,18 +6,6 @@
     fetching book stats from Amzaon. Later functionality will include adding
     new books to a database for website implementation.
 
-    Required Libraries:
-        bs4 - Beautiful Soup 4 for web scraping
-        requests - Acquiring html data from web
-        pyisbn - ISBN handling
-        lxml - HTML Parser
-
-    *TO-DO:
-        - implement exception handling
-        - add Barnes & Noble price scraping
-        - implement test SQLite3 database before using PostgreSQL
-        - update sqlite3 database info from Amazon in constructor
-
     """
 from bs4 import BeautifulSoup
 import requests
@@ -53,13 +41,25 @@ class Book:
             string: validated and converted ISBN-10
         """
 
+        # strip all non-numerical characters from input
+        temp = ""
+        for c in isbn:
+            if c.isdigit():
+                temp = temp + c
+        isbn = temp
+
+        # Ensure appropriate isbn length
+        if len(isbn) != 10 and len(isbn) != 13:
+            return "Invalid ISBN Length"
+
         if not pyisbn.validate(isbn):
             return "Invalid ISBN"
 
         # Convert unkown ISBN type to ISBN10 for Amazon
-        validated_isbn10 = pyisbn.convert(isbn)
-
-        return validated_isbn10
+        if len(isbn) == 10:
+            return isbn
+        else:
+            return pyisbn.convert(isbn, "978")
 
     # Get multiple URL sites mostly using the pyisbn API
     @staticmethod
