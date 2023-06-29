@@ -15,8 +15,8 @@ Table Book {
 }
 
 Table Wishlist {
-  email_address varchar [primary key]
-  isbn10 biginteger [primary key]
+  email_address varchar [foreign key]
+  isbn10 biginteger [foreign key]
 }
 
 Ref: User.email_address > Wishlist.email_address
