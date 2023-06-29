@@ -1,0 +1,23 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table User {
+  first_name varchar
+  last_name varchar
+  email_address varchar [primary key]
+}
+
+Table Book {
+  isbn10 biginteger [primary key]
+  title varchar
+  author varchar
+  price real
+}
+
+Table Wishlist {
+  email_address varchar [primary key]
+  isbn10 biginteger [primary key]
+}
+
+Ref: User.email_address > Wishlist.email_address
+Ref: Book.isbn10 > Wishlist.isbn10

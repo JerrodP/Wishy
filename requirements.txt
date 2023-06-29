@@ -2,6 +2,6 @@ bs4
 lxml
 pyisbn
 pylint
-pyscopg2
+psycopg2
 requests
 wheel
