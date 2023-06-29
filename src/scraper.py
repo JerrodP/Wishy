@@ -76,7 +76,7 @@ class Scraper:
         return book.to_url("google", "us")
 
     @staticmethod
-    def fetch_amazon_stats(validated_isbn10):
+    def fetch_book_stats(validated_isbn10):
         """Get Amazon Stats for book. Will later be updated to initialize a
         database entry
 

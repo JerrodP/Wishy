@@ -52,33 +52,87 @@ class Database:
         self.cursor.close()
         self.conn.close()
 
-    def add_book(self, stats):
-        """Adds book to database."""
+    def add_new_book(self, stats):
+        """Adds a new book to database."""
         add_book_script = "INSERT INTO public.Book (title, isbn10, amazon_price, author) VALUES (%s, %s, %s, %s)"
 
         self.open_connection()
 
         try:
             self.cursor.execute(add_book_script, stats)
-        except psycopg2.DatabaseError as error:
-            print(error)
-        finally:
+        except psycopg2.IntegrityError:
+            self.conn.rollback()
+        else:
             self.conn.commit()
+        finally:
             self.close_connection()
 
-    def add_user(self, user_list):
-        """Adds a new user to the database."""
+    def add_new_user(self, user_list):
+        """Adds a new user to the database. where user_lsit is :
+        ['first_name', 'last_name', 'email_address']
+        """
 
         add_user_script = "INSERT INTO public.Wishy_User (first_name, last_name, email) VALUES (%s, %s, %s)"
+
+        user_list[2] = user_list[2].lower()
 
         self.open_connection()
 
         try:
             self.cursor.execute(add_user_script, user_list)
+        except psycopg2.IntegrityError:
+            self.conn.rollback()
+        else:
+            self.conn.commit()
+        finally:
+            self.close_connection()
+
+    def add_book_to_wishlist(self, user_list, book_stats):
+        """Adds book and user to wishlist table.
+        Also checks to make sure there's no duplicates."""
+
+        user_email = user_list[2].lower()
+        validated_isbn = book_stats[1]
+
+        self.add_new_book(book_stats)
+        self.add_new_user(user_list)
+
+        add_wishlist_script = (
+            "INSERT INTO public.wishlist (email, isbn10) VALUES ('%s', %s)"
+            % (user_email, validated_isbn)
+        )
+
+        self.open_connection()
+
+        try:
+            self.cursor.execute(add_wishlist_script)
+        except psycopg2.IntegrityError:
+            self.conn.rollback()
+        else:
+            self.conn.commit()
+        finally:
+            self.close_connection()
+
+    def get_user_wishlist(self, user_email):
+        """Get user wishlist from database."""
+
+        get_user_wishlist_script = str(
+            """SELECT u.first_name, u.last_name, w.isbn10
+            from public.wishy_user u
+            inner join wishlist w
+            on u.email = w.email
+            where u.email = '%s';"""
+            % user_email
+        )
+
+        self.open_connection()
+
+        try:
+            self.cursor.execute(get_user_wishlist_script)
+            records = self.cursor.fetchall()
         except psycopg2.DatabaseError as error:
             print(error)
         finally:
-            self.conn.commit()
             self.close_connection()
 
-        print("Added ", user_list, " as user.")
+        return records
