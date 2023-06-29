@@ -3,8 +3,10 @@
     removing, and more.
 """
 
+from src.scraper import Scraper
 from configparser import ConfigParser
 import psycopg2
+import time
 
 
 class Database:
@@ -27,7 +29,7 @@ class Database:
         self.conn.close()
 
     def open_connection(self):
-        """# Opens connections to SQL Database. Must be called before every update funciton."""
+        """Opens connections to SQL Database. Must be called before every update funciton."""
         try:
             self.conn = psycopg2.connect(
                 host=self.config["server"]["hostname"],
@@ -136,3 +138,55 @@ class Database:
             self.close_connection()
 
         return records
+
+    def update_book_prices(self):
+        """This updates all book prices in the database and will keep track of
+        price drops. Eventually these price drops will be emailed out to
+        users."""
+
+        start_time = time.time()
+
+        select_script = "SELECT isbn10, amazon_price FROM public.book"
+
+        # Get prices from database
+        self.open_connection()
+        try:
+            self.cursor.execute(select_script)
+            book_records = self.cursor.fetchall()
+        except psycopg2.IntegrityError as error:
+            print(error)
+        finally:
+            self.close_connection()
+
+        updated_books = []
+
+        for book in book_records:
+            old_price = book[1]
+            isbn10 = Scraper.parse_isbn(str(book[0]))
+            new_price = Scraper.fetch_amazon_price(isbn10)
+
+            # store pricing differences for notifying user
+            if new_price != old_price:
+                temp_updated_books = [book[0], new_price, old_price]
+                updated_books.append(temp_updated_books)
+
+        total_updates = len(updated_books)
+
+        # Update all new prices into database
+        if total_updates > 0:
+            self.open_connection()
+            for book in updated_books:
+                update_script = (
+                    "UPDATE public.book SET amazon_price=%s where isbn10=%s"
+                    % (book[0], book[1])
+                )
+                try:
+                    self.cursor.execute(update_script)
+                except psycopg2.Error as err:
+                    print(err)
+
+            self.close_connection()
+
+        end_time = time.time()
+        duration = end_time - start_time
+        print("Elapsed time to update all books: ", duration, "s")

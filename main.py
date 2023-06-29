@@ -7,14 +7,12 @@ from src.database import Database
 
 
 def main():
-    DB = Database()
-
-    isbn = "978-1400079278"
-    # isbn = "0143039431"
-    isbn = Scraper.parse_isbn(isbn)
+    isbn = Scraper.parse_isbn("143039431")
     book_stats = Scraper.fetch_book_stats(isbn)
     print(book_stats)
-    DB.add_new_book(book_stats)
+
+    DB = Database()
+    DB.update_book_prices()
 
 
 if __name__ == "__main__":
