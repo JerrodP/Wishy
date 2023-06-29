@@ -1,4 +1,7 @@
-.vscode
-__pycache__
-wishy_env
 .idea
+.vscode
+.DS_Stores
+__pycache__
+config/server_config.ini
+wishy_env
+.DS_Store

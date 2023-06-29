@@ -23,7 +23,7 @@ HEADERS = {
 AMAZON_URL = "https://www.amazon.com/s?k="
 
 
-class Book:
+class Scraper:
     """Test class for book. Plans to imporve this class are in the to-do list
     at the top
     """
