@@ -1,4 +1,7 @@
 bs4
-requests
-pyisbn
 lxml
+pyisbn
+pylint
+psycopg2
+requests
+wheel

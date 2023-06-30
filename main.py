@@ -1,12 +1,18 @@
-from scraper import Book
+""" Temporary Main file for testing
+
+"""
+
+from src.scraper import Scraper
+from src.database import Database
 
 
 def main():
-    isbn = "978-0143039433"
-    # isbn = "0143039431"
-    isbn = Book.parse_isbn(isbn)
-    book_stats = Book.fetch_amazon_stats(isbn)
+    isbn = Scraper.parse_isbn("143039431")
+    book_stats = Scraper.fetch_book_stats(isbn)
     print(book_stats)
+
+    DB = Database()
+    DB.update_book_prices()
 
 
 if __name__ == "__main__":

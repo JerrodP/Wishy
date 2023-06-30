@@ -23,7 +23,7 @@ HEADERS = {
 AMAZON_URL = "https://www.amazon.com/s?k="
 
 
-class Book:
+class Scraper:
     """Test class for book. Plans to imporve this class are in the to-do list
     at the top
     """
@@ -49,8 +49,7 @@ class Book:
         isbn = temp
 
         # Ensure appropriate isbn length
-        if len(isbn) != 10 and len(isbn) != 13:
-            return "Invalid ISBN Length"
+        isbn = isbn.zfill(10)
 
         if not pyisbn.validate(isbn):
             return "Invalid ISBN"
@@ -76,7 +75,7 @@ class Book:
         return book.to_url("google", "us")
 
     @staticmethod
-    def fetch_amazon_stats(validated_isbn10):
+    def fetch_book_stats(validated_isbn10):
         """Get Amazon Stats for book. Will later be updated to initialize a
         database entry
 
@@ -135,7 +134,7 @@ class Book:
             float: price of book on Amazon
         """
         html_http_response = requests.get(
-            AMAZON_URL + validated_isbn10, headers=HEADERS
+            AMAZON_URL + str(validated_isbn10), headers=HEADERS
         )
 
         if str(html_http_response) != "<Response [200]>":
@@ -149,6 +148,7 @@ class Book:
         # Named "title_card" because i'm unsure of proper HTML or CSS name.
         title_card = soup.find("div", {"data-asin": validated_isbn10})
 
-        price = title_card.find("span", {"class": "a-offscreen"}).text
+        price_card = title_card.find("span", {"class": "a-price"})
+        price = price_card.find("span", {"class": "a-offscreen"}).text
 
         return float(price.replace("$", ""))
