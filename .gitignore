@@ -2,6 +2,7 @@
 .vscode
 .DS_Stores
 __pycache__
-config/server_config.ini
+config/
 wishy_env
 .DS_Store
+token.json
