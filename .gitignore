@@ -5,3 +5,4 @@ __pycache__
 config/
 wishy_env
 .DS_Store
+token.json
