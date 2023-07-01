@@ -3,6 +3,8 @@
 .DS_Stores
 __pycache__
 config/
+database/
+src/token.json
 wishy_env
 .DS_Store
 token.json
