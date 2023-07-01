@@ -3,11 +3,12 @@
     removing, and more.
 """
 
-from src.scraper import Scraper
 from configparser import ConfigParser
-import psycopg2
 import time
+import psycopg2
+import sqlite3
 
+from src.scraper import Scraper
 
 class Database:
     """
@@ -22,26 +23,25 @@ class Database:
 
     conn = None
     cursor = None
+    is_open = False
 
     # Destructor
     def __del__(self):
-        self.cursor.close()
-        self.conn.close()
+        if self.is_open:
+            self.cursor.close()
+            self.conn.close()
 
     def open_connection(self):
         """Opens connections to SQL Database. Must be called before every update funciton."""
         try:
-            self.conn = psycopg2.connect(
-                host=self.config["server"]["hostname"],
-                dbname=self.config["server"]["database"],
-                user=self.config["server"]["username"],
-                password=self.config["server"]["pwd"],
-                port=self.config["server"]["port_id"],
+            self.conn = sqlite3.connect(
+                "database/wishy.db"
             )
 
             self.cursor = self.conn.cursor()
+            self.is_open = True
 
-        except psycopg2.OperationalError as error:
+        except sqlite3.Error as error:
             print(error)
             if self.cursor is not None:
                 self.cursor.close()
@@ -53,10 +53,11 @@ class Database:
         """Closes connections to SQL Database. Must be called after every update funciton."""
         self.cursor.close()
         self.conn.close()
+        self.is_open = False
 
     def add_new_book(self, stats):
         """Adds a new book to database."""
-        add_book_script = "INSERT INTO public.Book (title, isbn10, amazon_price, author) VALUES (%s, %s, %s, %s)"
+        add_book_script = "INSERT INTO Book (title, isbn10, amazon_price, author) VALUES (%s, %s, %s, %s)"
 
         self.open_connection()
 
@@ -74,7 +75,7 @@ class Database:
         ['first_name', 'last_name', 'email_address']
         """
 
-        add_user_script = "INSERT INTO public.Wishy_User (first_name, last_name, email) VALUES (%s, %s, %s)"
+        add_user_script = "INSERT INTO Wishy_User (first_name, last_name, email) VALUES (%s, %s, %s)"
 
         user_list[2] = user_list[2].lower()
 
@@ -100,7 +101,7 @@ class Database:
         self.add_new_user(user_list)
 
         add_wishlist_script = (
-            "INSERT INTO public.wishlist (email, isbn10) VALUES ('%s', %s)"
+            "INSERT INTO wishlist (email, isbn10) VALUES ('%s', %s)"
             % (user_email, validated_isbn)
         )
 
@@ -108,7 +109,7 @@ class Database:
 
         try:
             self.cursor.execute(add_wishlist_script)
-        except psycopg2.IntegrityError:
+        except sqlite3.Error:
             self.conn.rollback()
         else:
             self.conn.commit()
@@ -118,12 +119,14 @@ class Database:
     def get_user_wishlist(self, user_email):
         """Get user wishlist from database."""
 
+        user_email = user_email.lower()
+
         get_user_wishlist_script = str(
             """SELECT u.first_name, u.last_name, w.isbn10
-            from public.wishy_user u
-            inner join wishlist w
-            on u.email = w.email
-            where u.email = '%s';"""
+            from User u
+            inner join Wishlist w
+            on u.email_address = w.email_address
+            where u.email_address = '%s'"""
             % user_email
         )
 
@@ -146,14 +149,14 @@ class Database:
 
         start_time = time.time()
 
-        select_script = "SELECT isbn10, amazon_price FROM public.book"
+        select_script = "SELECT isbn10, amazon_price FROM book"
 
         # Get prices from database
         self.open_connection()
         try:
             self.cursor.execute(select_script)
             book_records = self.cursor.fetchall()
-        except psycopg2.IntegrityError as error:
+        except sqlite3.Error as error:
             print(error)
         finally:
             self.close_connection()
@@ -177,7 +180,7 @@ class Database:
             self.open_connection()
             for book in updated_books:
                 update_script = (
-                    "UPDATE public.book SET amazon_price=%s where isbn10=%s"
+                    "UPDATE book SET amazon_price=%s where isbn10=%s"
                     % (book[0], book[1])
                 )
                 try:
