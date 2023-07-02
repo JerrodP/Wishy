@@ -8,8 +8,18 @@
 
     """
 from bs4 import BeautifulSoup
+from configparser import ConfigParser
 import requests
 import pyisbn
+import sys
+
+# Appending system path because loading Python modules is the stupidiest...
+from os.path import dirname, abspath
+d = dirname(dirname(__file__))
+sys.path.append(d)
+
+import src.headers as Headers
+
 
 # Necessary header for HTTP 200 response code.
 HEADERS = {
@@ -22,11 +32,28 @@ HEADERS = {
 # CONSTANTS
 AMAZON_URL = "https://www.amazon.com/s?k="
 
-
 class Scraper:
-    """Test class for book. Plans to imporve this class are in the to-do list
+    """
+    Test class for book. Plans to imporve this class are in the to-do list
     at the top
     """
+
+    PROXIES = None
+    fingerprint = None
+
+    def __init__(self):
+        # Proxy server connection
+        config = ConfigParser()
+        config.read("config/server_config.ini")
+        USERNAME = config['proxy']['username']
+        PASSWORD = config['proxy']['password']
+        # self.fingerprint = Headers.get_fingerprint()
+
+        self.PROXIES = {
+            'http': 'http://customer-%s-cc-us-st-us_alabama-sessid-0768333109-sesstime-10:%s@pr.oxylabs.io:7777' % (USERNAME, PASSWORD),   
+            'https': 'https://customer-%s-cc-us-st-us_alabama-sessid-0768333109-sesstime-10:%s@pr.oxylabs.io:7777' % (USERNAME, PASSWORD)
+        }
+
 
     @staticmethod
     def parse_isbn(isbn):
@@ -74,8 +101,7 @@ class Scraper:
         book = pyisbn.Isbn(validated_isbn10)
         return book.to_url("google", "us")
 
-    @staticmethod
-    def fetch_book_stats(validated_isbn10):
+    def fetch_book_stats(self, validated_isbn10):
         """Get Amazon Stats for book. Will later be updated to initialize a
         database entry
 
@@ -92,12 +118,22 @@ class Scraper:
         """
 
         html_http_response = requests.get(
-            AMAZON_URL + validated_isbn10, headers=HEADERS
+            AMAZON_URL + validated_isbn10,
+            headers=Headers.get_fingerprint(),
+            proxies=self.PROXIES,
+            timeout=3
         )
 
+        # TODO remove, needed for testing only
+        print("Size of Amazon request: ", len(html_http_response.content))
+
         # Ensure a proper HTTP response of 200
+        if str(html_http_response) == "<Response [503]>":
+            print("Response 503 received")
+            return None
+
         if str(html_http_response) != "<Response [200]>":
-            return [None]
+            return None
 
         html_text = html_http_response.text
 
@@ -124,7 +160,7 @@ class Scraper:
         return book_info
 
     @staticmethod
-    def fetch_amazon_price(validated_isbn10):
+    def fetch_amazon_price(self, validated_isbn10):
         """Returns amazon price for book given a validated ISBN-10
 
         Args:
@@ -134,7 +170,11 @@ class Scraper:
             float: price of book on Amazon
         """
         html_http_response = requests.get(
-            AMAZON_URL + str(validated_isbn10), headers=HEADERS
+            AMAZON_URL + str(validated_isbn10),
+            headers=Headers.get_fingerprint(),
+            proxies=self.PROXIES,
+            timeout=3
+
         )
 
         if str(html_http_response) != "<Response [200]>":
